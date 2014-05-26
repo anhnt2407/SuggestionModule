@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package br.cin.ufpe.nesc2cpn.suggestion.ifsuggestions;
 
 import br.cin.ufpe.nesc2cpn.nescModule.instructions.IfElse;
-import br.cin.ufpe.nesc2cpn.nescModule.instructions.Instruction;
 import br.cin.ufpe.nesc2cpn.suggestion.Suggestion;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,46 +9,30 @@ import java.util.List;
  *
  * @author davi
  */
-public class IfSuggestions {
-
-    public IfSuggestions() {
+public class IfSuggestions
+{
+    private Suggestion sug;
+    
+    public IfSuggestions()
+    {
+        sug = new IfOrderSuggestions();
     }
 
-
-
-    public List<String> suggestions(Instruction inst) {
-
-        Suggestion sug;
+    public List<String> suggestions( IfElse ifElse )
+    {
         List <String> listBasic = new ArrayList<String>();
 
+        if ( sug.identify( ifElse ) )
+        {
+            boolean result = sug.analyse( ifElse );
 
-        IfElse ifelse = (IfElse) inst;
-
-        sug = new IfOrderSuggestions();
-
-        //suggestions(sug, ifelse);
-        
-        if (sug.identify(ifelse)) {
-            boolean result = sug.analyse(ifelse);
-
-            if (result) {
-                System.out.println("Tem sugestão: "  + inst.getLineNumber() +" "+  result);
-                listBasic.add(sug.getSuggestion());
-
-//                System.out.println("tem sugestão1: " + result);
-//                System.out.println("sugestão na linha "
-//                        + ifelse.getLineNumber()
-//                        + ": " + sug.getSuggestion());
-            } else {
-
-                System.out.println("tem sugestão: " + result);
-
+            if ( result )
+            {
+                System.out.println( "Tem sugestão: "  + ifElse.getLineNumber() + " " +  result );
+                listBasic.add( sug.getSuggestion() );
             }
         }
         
         return listBasic;
-
-
-
     }
 }

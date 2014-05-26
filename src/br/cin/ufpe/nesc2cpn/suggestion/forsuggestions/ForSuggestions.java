@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package br.cin.ufpe.nesc2cpn.suggestion.forsuggestions;
 
 import br.cin.ufpe.nesc2cpn.nescModule.instructions.For;
-import br.cin.ufpe.nesc2cpn.nescModule.instructions.Instruction;
 import br.cin.ufpe.nesc2cpn.suggestion.Suggestion;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,70 +9,34 @@ import java.util.List;
  *
  * @author davi
  */
-public class ForSuggestions {
-
-    public ForSuggestions() {
+public class ForSuggestions
+{
+    List<Suggestion> suggestionList;
+    
+    public ForSuggestions()
+    {
+        suggestionList = new ArrayList<Suggestion>();
+        suggestionList.add( new ForArraySuggestions()  );
+        suggestionList.add( new ForNumbersSuggestion() );
     }
 
-
-
-    public List<String> suggestions(Instruction inst) {
-        Suggestion sug;
-        
+    public List<String> suggestions( For inst )
+    {
         List <String> listBasic = new ArrayList<String>();
 
+        for( Suggestion<For> sug : suggestionList )
+        {
+            if ( sug.identify( inst ) )
+            {
+                boolean result = sug.analyse( inst );
 
-        For forarray = (For) inst;
-
-
-        sug = new ForArraySuggestions();
-
-        //suggestions(sug, forarray);
-        
-        if (sug.identify(forarray)) {
-            boolean result = sug.analyse(forarray);
-
-            if (result) {
-                System.out.println("Tem sugestão: "   + inst.getLineNumber() +" "+sug.getSuggestion() +" "+  result);
-                listBasic.add(sug.getSuggestion());
-
-//                System.out.println("tem sugestão: " + result);
-//                System.out.println("sugestão na linha "
-//                        + forarray.getLineNumber()
-//                        + ": " + sug.getSuggestion());
-            } else {
-                System.out.println("tem sugestão: " + result);
-
-            }
-        }
-
-
-        sug = new ForNumbersSuggestion();
-
-        //suggestions(sug, forarray);
-        
-        if (sug.identify(forarray)) {
-            boolean result = sug.analyse(forarray);
-
-            if (result) {
-                System.out.println("Tem sugestão: "   + inst.getLineNumber() +" "+sug.getSuggestion() +" "+  result);
-                listBasic.add(sug.getSuggestion());
-
-//                System.out.println("tem sugestão: " + result);
-//                System.out.println("sugestão na linha "
-//                        + forarray.getLineNumber()
-//                        + ": " + sug.getSuggestion());
-            } else {
-                System.out.println("tem sugestão: " + result);
-
+                if ( result )
+                {
+                    listBasic.add( sug.getSuggestion() );
+                }
             }
         }
         
         return listBasic;
-
-
-
-
-        
     }
 }

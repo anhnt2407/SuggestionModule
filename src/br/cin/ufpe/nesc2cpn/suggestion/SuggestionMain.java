@@ -1,13 +1,10 @@
 package br.cin.ufpe.nesc2cpn.suggestion;
 
 import br.cin.ufpe.nesc2cpn.nescModule.Module;
-import br.cin.ufpe.nesc2cpn.nescModule.ProjectDate;
 import br.cin.ufpe.nesc2cpn.nescModule.ProjectFile;
-import br.cin.ufpe.nesc2cpn.nescModule.creator.AssignCreator;
 import br.cin.ufpe.nesc2cpn.nescModule.instructions.*;
 import br.cin.ufpe.nesc2cpn.suggestion.basicsuggestions.BasicSuggestions;
 import br.cin.ufpe.nesc2cpn.suggestion.forsuggestions.ForSuggestions;
-import br.cin.ufpe.nesc2cpn.suggestion.ifsuggestions.IfOrderSuggestions;
 import br.cin.ufpe.nesc2cpn.suggestion.ifsuggestions.IfSuggestions;
 import java.io.File;
 import java.util.*;
@@ -17,200 +14,106 @@ import java.util.Map.Entry;
  *
  * @author avld
  */
-public class SuggestionMain {
-
-    public SuggestionMain() {
+public class SuggestionMain
+{
+    private BasicSuggestions basic;
+    private IfSuggestions ifs;
+    private ForSuggestions fors;
+    
+    public SuggestionMain()
+    {
+        basic = new BasicSuggestions();
+        ifs   = new IfSuggestions();
+        fors  = new ForSuggestions();
     }
 
-
-    public Map processSuggestions(String filename) throws Exception {
-        
+    public Map<Integer, List<String>> processSuggestions( String filename ) throws Exception
+    {
         Map<Integer, List<String>> mapSuggestion = new HashMap<Integer, List<String>>();
 
-        File arquivo = new File(filename);
+        File arquivo            = new File( filename );
+        
         ProjectFile projectFile = new ProjectFile();
-        projectFile.addDiretory((arquivo.getParent() == null ? "." : arquivo.getParent()));
-        projectFile.processFile(arquivo.getName());
+        projectFile.addDiretory( ( arquivo.getParent() == null ? "." : arquivo.getParent() ) );
+        projectFile.processFile( arquivo.getName() );
 
-        Module module = projectFile.getModuleList().get(0);
+        Module module = projectFile.getModuleList().get( 0 );
 
-
-        for (Function fun : module.getFunctions()) {
-            //System.out.println(fun.getFunctionName());
-            
-
-            for (Instruction inst : fun.getInstructions()) {
+        for ( Function fun : module.getFunctions() )
+        {
+            for ( Instruction inst : fun.getInstructions() )
+            {
+                System.out.println("----------- " 
+                                    + inst.getType() 
+                                    + " linha " 
+                                    + inst.getLineNumber()
+                                    + " " + inst.getText() );
                 
-                System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX " + inst.getType() + " linha " + inst.getLineNumber()+" "+ inst.getText());
-                
-                if (inst instanceof Assign) {
+                if ( inst instanceof Assign )
+                {
+                    List<String> lista = basic.suggestions( (Assign) inst );
                     
-                    
-                    BasicSuggestions basic = new BasicSuggestions();
-                    //basic.suggestions(inst);
-                    
-                    for(String s : basic.suggestions(inst)){
-                        
-                        if(mapSuggestion.get(inst.getLineNumber())==null){
-//                            mapSuggestion.put(inst.getLineNumber(), basic.suggestions(inst));
-//                            break;
-                            List <String> l = new ArrayList<String>();
-                             l.add(s);
-                             mapSuggestion.put(inst.getLineNumber(), l);
-                        } else {
-                            mapSuggestion.get(inst.getLineNumber()).add(s);
-                        }
-                        
-                                           }
-                    
-                    
-                }
-                
-                if (inst instanceof IfElse) {
-                   
-                    
-                    IfSuggestions ifs = new IfSuggestions();
-                    
-                    
-                    for(String s : ifs.suggestions(inst)){
-                        //mapSuggestion.get(inst.getLineNumber()).add(s);
-                        
-                        if(mapSuggestion.get(inst.getLineNumber())==null){
-//                            mapSuggestion.put(inst.getLineNumber(), ifs.suggestions(inst));
-//                            break;
-                            List <String> l = new ArrayList<String>();
-                             l.add(s);
-                             mapSuggestion.put(inst.getLineNumber(), l);
-                        } else {
-                            mapSuggestion.get(inst.getLineNumber()).add(s);
-                        }
-                        
-                        
-                        
+                    if( !mapSuggestion.containsKey( inst.getLineNumber() ) )
+                    {
+                        mapSuggestion.put( inst.getLineNumber() , lista );
+                    }
+                    else
+                    {
+                        mapSuggestion.get( inst.getLineNumber() ).addAll( lista );
                     }
                 }
-                
-                if (inst instanceof For) {
+                else if ( inst instanceof IfElse )
+                {
+                    List<String> lista = ifs.suggestions( (IfElse) inst );
                     
+                    if( !mapSuggestion.containsKey( inst.getLineNumber() ) )
+                    {
+                        mapSuggestion.put( inst.getLineNumber() , lista );
+                    }
+                    else
+                    {
+                        mapSuggestion.get( inst.getLineNumber() ).addAll( lista );
+                    }
+                }
+                else if ( inst instanceof For )
+                {
+                    List<String> lista = fors.suggestions( (For) inst );
                     
-                    ForSuggestions fors = new ForSuggestions();
-                    //fors.suggestions(inst);
-                    System.out.println("davi "+inst.getLineNumber());
-                    for(String s : fors.suggestions(inst)){
-                        System.out.println("davi2 "+inst.getLineNumber());
-                       
-                        
-                         if(mapSuggestion.get(inst.getLineNumber())==null){
-                             List <String> l = new ArrayList<String>();
-                             l.add(s);
-                             mapSuggestion.put(inst.getLineNumber(), l);
-//                           
-                        } else {
-                            mapSuggestion.get(inst.getLineNumber()).add(s);
-                        }
+                    if( !mapSuggestion.containsKey( inst.getLineNumber() ) )
+                    {
+                        mapSuggestion.put( inst.getLineNumber() , lista );
+                    }
+                    else
+                    {
+                        mapSuggestion.get( inst.getLineNumber() ).addAll( lista );
                     }
                 }
 
 
-            }
-        }
-         System.out.println("**************************************************************************************");
-        for(Entry entry : mapSuggestion.entrySet()){
-            System.out.println("Linha "+entry.getKey());
-            for(Object valor : (List)entry.getValue()){
-                System.out.println(valor.toString());
             }
         }
         
-
-
+        System.out.println( " ----------------------- " );
+        for( Entry<Integer,List<String>> entry : mapSuggestion.entrySet() )
+        {
+            System.out.println( "Linha " + entry.getKey() );
+            
+            for( String valor : entry.getValue() )
+            {
+                System.out.println( valor );
+            }
+        }
 
         return mapSuggestion;
     }
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String args[]) throws Exception
+    {
         // mudar = mudar + 1;       mudar++;
         // mudar = mudar + 1 + 1;   mudar++;
         // mudar = mudar + 2;       mudar += 2;
 
         SuggestionMain sugs = new SuggestionMain();
-        //sugs.processSuggestions("/opt/tinyos-2.1.1/apps/RadioCountToLeds/RadioCountToLedsAppC.nc");
-        sugs.processSuggestions("/home/davi/Downloads/Eclipse/eclipse1PluginYeti/workspaces/SuggestionsNesC/src/SuggestionsAppC.nc");
-        /*
-         * ProjectDate.getInstance().putVariableType("mudar", "int"); //String
-         * assignTxt = "mudar = mudar + 388;"; String assignTxt = "mudar = 1 -
-         * mudar;";
-         *
-         * // ---------- CRIO O OBJ AssignCreator creator = new
-         * AssignCreator(); Assign assign = (Assign)
-         * creator.convertTo(assignTxt);
-         *
-         * // ---------- ANALISO O OBJ Suggestion sug = new
-         * AssignPlusPlusSuggestion();
-         *
-         * if (sug.identify(assign)) { boolean result = sug.analyse(assign);
-         *
-         * if (result) {
-         *
-         * System.out.println("tem sugestão: " + result);
-         * System.out.println("sugestão na linha " + assign.getLineNumber() + ":
-         * " + sug.getSuggestion()); } else { System.out.println("tem sugestão:
-         * " + result);
-         *
-         * }
-         * }
-         *
-         * sug = new AssignLessLessSuggestion();
-         *
-         *
-         * if (sug.identify(assign)) { boolean result = sug.analyse(assign);
-         *
-         * if (result) {
-         *
-         * System.out.println("tem sugestão: " + result);
-         * System.out.println("sugestão na linha " + assign.getLineNumber() + ":
-         * " + sug.getSuggestion()); } else { System.out.println("tem sugestão:
-         * " + result);
-         *
-         * }
-         *
-         * }
-         *
-         *
-         *
-         * sug = new AssignPlusXSuggestion();
-         *
-         *
-         * if (sug.identify(assign)) { boolean result = sug.analyse(assign);
-         *
-         * if (result) {
-         *
-         * System.out.println("tem sugestão: " + result);
-         * System.out.println("sugestão na linha " + assign.getLineNumber() + ":
-         * " + sug.getSuggestion()); } else { System.out.println("tem sugestão:
-         * " + result);
-         *
-         * }
-         *
-         * }
-         *
-         * sug = new AssignLessXSuggestion();
-         *
-         *
-         * if (sug.identify(assign)) { boolean result = sug.analyse(assign);
-         *
-         * if (result) {
-         *
-         * System.out.println("tem sugestão: " + result);
-         * System.out.println("sugestão na linha " + assign.getLineNumber() + ":
-         * " + sug.getSuggestion()); } else { System.out.println("tem sugestão:
-         * " + result);
-         *
-         * }
-         *
-         * }
-         */
-
-
+        Map<Integer, List<String>> map = sugs.processSuggestions( "/opt/idea4wsn/1/Blink/BlinkAppC.nc" );
     }
 }
